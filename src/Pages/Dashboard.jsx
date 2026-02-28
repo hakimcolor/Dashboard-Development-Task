@@ -10,7 +10,10 @@ import {
   AiOutlineMenu,
   AiOutlineClose,
   AiOutlineBell,
-  AiOutlineSearch,
+  AiOutlineArrowUp,
+  AiOutlineArrowDown,
+  AiOutlineTrophy,
+  AiOutlineFire,
 } from 'react-icons/ai';
 import toast, { Toaster } from 'react-hot-toast';
 import axios from 'axios';
@@ -80,10 +83,15 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">
+          <div className="relative">
+            <div className="animate-spin rounded-full h-20 w-20 border-b-4 border-blue-600 mx-auto"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <AiOutlineBarChart className="text-blue-600 text-2xl animate-pulse" />
+            </div>
+          </div>
+          <p className="mt-6 text-gray-600 font-medium">
             Loading dashboard data from API...
           </p>
         </div>
@@ -93,12 +101,15 @@ const Dashboard = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <p className="text-red-600 mb-4">{error}</p>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+        <div className="text-center bg-white p-8 rounded-2xl shadow-xl">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AiOutlineClose className="text-red-600 text-3xl" />
+          </div>
+          <p className="text-red-600 mb-4 font-semibold">{error}</p>
           <button
             onClick={fetchDashboardData}
-            className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition"
+            className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition transform hover:scale-105"
           >
             Retry
           </button>
@@ -108,22 +119,28 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex">
       <Toaster position="top-center" />
+
       {/* Sidebar */}
       <aside
         className={`${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } lg:translate-x-0 fixed lg:static inset-y-0 left-0 z-50 w-72 bg-white border-r border-gray-200 transition-transform duration-300 ease-in-out`}
+        } lg:translate-x-0 fixed lg:static inset-y-0 left-0 z-50 w-72 bg-white border-r border-gray-200 transition-transform duration-300 ease-in-out shadow-xl`}
       >
-        <div className="p-6">
+        <div className="p-6 h-full flex flex-col">
           <div className="flex items-center justify-between mb-8">
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              TaskFlow
-            </h1>
+            <div className="flex items-center gap-2">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
+                <AiOutlineTrophy className="text-white text-xl" />
+              </div>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                TaskFlow
+              </h1>
+            </div>
             <button
               onClick={() => setSidebarOpen(false)}
-              className="lg:hidden text-gray-700"
+              className="lg:hidden text-gray-700 hover:bg-gray-100 p-2 rounded-lg transition"
             >
               <AiOutlineClose size={24} />
             </button>
@@ -131,8 +148,8 @@ const Dashboard = () => {
 
           {/* User Profile */}
           <div className="mb-8 pb-6 border-b border-gray-200">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full border-2 border-blue-500 bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold text-lg">
+            <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl">
+              <div className="w-12 h-12 rounded-full border-2 border-blue-500 bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-lg">
                 {user?.email?.charAt(0).toUpperCase() || 'U'}
               </div>
               <div className="flex-1 min-w-0">
@@ -145,31 +162,31 @@ const Dashboard = () => {
           </div>
 
           {/* Navigation */}
-          <nav className="space-y-2">
+          <nav className="space-y-2 flex-1">
             <a
               href="/dashboard"
-              className="flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white transition"
+              className="flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg transform transition hover:scale-105"
             >
               <AiOutlineHome size={20} />
               <span className="font-medium">Dashboard</span>
             </a>
             <a
               href="/users"
-              className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100 transition"
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition"
             >
               <AiOutlineUser size={20} />
               <span className="font-medium">Users</span>
             </a>
             <a
               href="/analytics"
-              className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100 transition"
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition"
             >
               <AiOutlineBarChart size={20} />
               <span className="font-medium">Analytics</span>
             </a>
             <a
               href="/products"
-              className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100 transition"
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition"
             >
               <AiOutlineShoppingCart size={20} />
               <span className="font-medium">Products</span>
@@ -179,7 +196,7 @@ const Dashboard = () => {
           {/* Logout Button */}
           <button
             onClick={handleLogout}
-            className="flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition mt-8 w-full"
+            className="flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition mt-4 w-full"
           >
             <AiOutlineLogout size={20} />
             <span className="font-medium">Logout</span>
@@ -190,31 +207,31 @@ const Dashboard = () => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <header className="bg-white border-b border-gray-200 p-4 lg:p-6">
+        <header className="bg-white/80 backdrop-blur-md border-b border-gray-200 p-4 lg:p-6 sticky top-0 z-40">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="lg:hidden text-gray-700"
+                className="lg:hidden text-gray-700 hover:bg-gray-100 p-2 rounded-lg transition"
               >
                 <AiOutlineMenu size={24} />
               </button>
               <div>
-                <h2 className="text-2xl font-bold text-gray-800">
-                  Welcome back, {user?.email?.split('@')[0] || 'User'}!
+                <h2 className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                  Welcome back, {user?.email?.split('@')[0] || 'User'}! 👋
                 </h2>
-                <p className="text-sm text-gray-500">
-                  Here's what's happening today
+                <p className="text-sm text-gray-500 mt-1">
+                  Here's what's happening with your projects today
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-3">
-              <button className="relative p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
+              <button className="relative p-3 text-gray-600 hover:bg-gray-100 rounded-xl transition">
                 <AiOutlineBell size={24} />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse"></span>
               </button>
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
+              <div className="hidden sm:flex w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl items-center justify-center text-white font-bold shadow-lg">
                 {user?.email?.charAt(0).toUpperCase() || 'U'}
               </div>
             </div>
@@ -225,75 +242,91 @@ const Dashboard = () => {
         <main className="flex-1 p-4 lg:p-6 overflow-auto">
           {/* Stats Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6">
-            <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+            {/* Total Users Card */}
+            <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
               <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                  <AiOutlineUser size={24} className="text-blue-600" />
+                <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <AiOutlineUser size={28} className="text-white" />
                 </div>
-                <span className="text-green-500 text-sm font-semibold">
-                  +{dashboardData?.overview?.growth}%
-                </span>
+                <div className="flex items-center gap-1 text-green-500 text-sm font-semibold bg-green-50 px-3 py-1 rounded-full">
+                  <AiOutlineArrowUp size={16} />
+                  <span>+{dashboardData?.overview?.growth}%</span>
+                </div>
               </div>
-              <p className="text-gray-500 text-sm mb-1">Total Users</p>
+              <p className="text-gray-500 text-sm mb-1 font-medium">
+                Total Users
+              </p>
               <p className="text-3xl font-bold text-gray-800">
                 {dashboardData?.overview?.totalUsers?.toLocaleString()}
               </p>
+              <div className="mt-3 h-1 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full"></div>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+            {/* Active Users Card */}
+            <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
               <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                  <AiOutlineBarChart size={24} className="text-green-600" />
+                <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <AiOutlineFire size={28} className="text-white" />
                 </div>
-                <span className="text-green-500 text-sm font-semibold">
-                  +12.5%
-                </span>
+                <div className="flex items-center gap-1 text-green-500 text-sm font-semibold bg-green-50 px-3 py-1 rounded-full">
+                  <AiOutlineArrowUp size={16} />
+                  <span>+12.5%</span>
+                </div>
               </div>
-              <p className="text-gray-500 text-sm mb-1">Active Users</p>
+              <p className="text-gray-500 text-sm mb-1 font-medium">
+                Active Users
+              </p>
               <p className="text-3xl font-bold text-gray-800">
                 {dashboardData?.overview?.activeUsers?.toLocaleString()}
               </p>
+              <div className="mt-3 h-1 bg-gradient-to-r from-green-500 to-green-600 rounded-full"></div>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+            {/* Revenue Card */}
+            <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
               <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-                  <AiOutlineShoppingCart
-                    size={24}
-                    className="text-purple-600"
-                  />
+                <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <AiOutlineShoppingCart size={28} className="text-white" />
                 </div>
-                <span className="text-green-500 text-sm font-semibold">
-                  +8.2%
-                </span>
+                <div className="flex items-center gap-1 text-green-500 text-sm font-semibold bg-green-50 px-3 py-1 rounded-full">
+                  <AiOutlineArrowUp size={16} />
+                  <span>+8.2%</span>
+                </div>
               </div>
-              <p className="text-gray-500 text-sm mb-1">Revenue</p>
+              <p className="text-gray-500 text-sm mb-1 font-medium">Revenue</p>
               <p className="text-3xl font-bold text-gray-800">
                 ${dashboardData?.overview?.revenue?.toLocaleString()}
               </p>
+              <div className="mt-3 h-1 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full"></div>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+            {/* Growth Rate Card */}
+            <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
               <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
-                  <AiOutlineHome size={24} className="text-orange-600" />
+                <div className="w-14 h-14 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <AiOutlineBarChart size={28} className="text-white" />
                 </div>
-                <span className="text-green-500 text-sm font-semibold">
-                  +15.3%
-                </span>
+                <div className="flex items-center gap-1 text-green-500 text-sm font-semibold bg-green-50 px-3 py-1 rounded-full">
+                  <AiOutlineArrowUp size={16} />
+                  <span>+15.3%</span>
+                </div>
               </div>
-              <p className="text-gray-500 text-sm mb-1">Growth Rate</p>
+              <p className="text-gray-500 text-sm mb-1 font-medium">
+                Growth Rate
+              </p>
               <p className="text-3xl font-bold text-gray-800">
                 {dashboardData?.overview?.growth}%
               </p>
+              <div className="mt-3 h-1 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full"></div>
             </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Recent Users */}
-            <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+            <div className="lg:col-span-2 bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-gray-800">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                  <AiOutlineUser className="text-blue-600" />
                   Recent Users
                 </h3>
                 <button className="text-blue-600 text-sm font-semibold hover:underline">
@@ -307,23 +340,26 @@ const Dashboard = () => {
                       <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">
                         User
                       </th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600 hidden md:table-cell">
                         Email
                       </th>
                       <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">
                         Status
                       </th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600">
+                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-600 hidden sm:table-cell">
                         Join Date
                       </th>
                     </tr>
                   </thead>
                   <tbody>
                     {dashboardData?.users?.slice(0, 5).map((user) => (
-                      <tr key={user.id} className="border-b border-gray-100">
+                      <tr
+                        key={user.id}
+                        className="border-b border-gray-100 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition"
+                      >
                         <td className="py-4 px-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold">
+                            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full flex items-center justify-center text-white font-semibold shadow-md">
                               {user.name.charAt(0)}
                             </div>
                             <span className="font-medium text-gray-800">
@@ -331,7 +367,7 @@ const Dashboard = () => {
                             </span>
                           </div>
                         </td>
-                        <td className="py-4 px-4 text-gray-600">
+                        <td className="py-4 px-4 text-gray-600 hidden md:table-cell">
                           {user.email}
                         </td>
                         <td className="py-4 px-4">
@@ -345,7 +381,7 @@ const Dashboard = () => {
                             {user.status}
                           </span>
                         </td>
-                        <td className="py-4 px-4 text-gray-600">
+                        <td className="py-4 px-4 text-gray-600 hidden sm:table-cell">
                           {user.joinDate}
                         </td>
                       </tr>
@@ -356,23 +392,29 @@ const Dashboard = () => {
             </div>
 
             {/* Top Products */}
-            <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
-              <h3 className="text-xl font-bold text-gray-800 mb-6">
+            <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+              <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                <AiOutlineTrophy className="text-orange-600" />
                 Top Products
               </h3>
               <div className="space-y-4">
-                {dashboardData?.products?.slice(0, 4).map((product) => (
+                {dashboardData?.products?.slice(0, 4).map((product, index) => (
                   <div
                     key={product.id}
-                    className="flex items-center justify-between p-4 bg-gray-50 rounded-xl"
+                    className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl hover:shadow-md transition"
                   >
-                    <div>
-                      <p className="font-semibold text-gray-800">
-                        {product.name}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {product.sales} sales
-                      </p>
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center text-white font-bold shadow-md">
+                        #{index + 1}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-800">
+                          {product.name}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          {product.sales} sales
+                        </p>
+                      </div>
                     </div>
                     <p className="text-lg font-bold text-blue-600">
                       ${product.price}
@@ -389,7 +431,7 @@ const Dashboard = () => {
       {sidebarOpen && (
         <div
           onClick={() => setSidebarOpen(false)}
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden backdrop-blur-sm"
         ></div>
       )}
     </div>
