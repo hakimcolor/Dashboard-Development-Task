@@ -41,9 +41,38 @@ const Users = () => {
   }, []);
 
   const handleLogout = () => {
-    logout();
-    toast.success('Logged out successfully!');
-    navigate('/');
+    toast(
+      (t) => (
+        <div className="flex flex-col gap-3">
+          <p className="font-semibold text-gray-800">
+            Are you sure you want to logout?
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                logout();
+                toast.dismiss(t.id);
+                toast.success('Logged out successfully!');
+                navigate('/');
+              }}
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+            >
+              Yes, Logout
+            </button>
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        duration: 5000,
+        position: 'top-center',
+      }
+    );
   };
 
   const filteredUsers = users.filter(

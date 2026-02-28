@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { AuthContext } from './AuthContext';
+import axios from 'axios';
 
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -48,6 +49,34 @@ const AuthProvider = ({ children }) => {
       // Store token and user data (simulating JWT storage)
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(userData));
+
+      // Try to save user data to API (will fail if API is read-only)
+      try {
+        await axios.post('https://task-api-eight-flax.vercel.app/api/users', {
+          name: email.split('@')[0],
+          email: email,
+          password: password,
+          status: 'active',
+          joinDate: new Date().toISOString().split('T')[0],
+        });
+        console.log('User data saved to API successfully');
+      } catch (apiError) {
+        console.log('API is read-only, user data saved locally only');
+        // Save to localStorage as backup
+        const localUsers = JSON.parse(
+          localStorage.getItem('localUsers') || '[]'
+        );
+        const newUser = {
+          id: Date.now(),
+          name: email.split('@')[0],
+          email: email,
+          password: password,
+          status: 'active',
+          joinDate: new Date().toISOString().split('T')[0],
+        };
+        localUsers.push(newUser);
+        localStorage.setItem('localUsers', JSON.stringify(localUsers));
+      }
 
       setUser(userData);
       return { token, ...userData };
