@@ -1,18 +1,4 @@
-/**
- * SignIn Component
- *
- * Login page with animated Vanta.js waves background.
- * Features:
- * - JWT authentication via /api/login endpoint
- * - Email and password input fields with validation
- * - Password visibility toggle
- * - Loading state during authentication
- * - Error handling with toast notifications
- * - Vanta.js WAVES animated 3D background
- * - Demo credentials display for testing
- * - Redirects to dashboard on successful login
- */
-
+// Login page with Vanta.js animated background
 import { useContext, useState, useEffect, useRef } from 'react';
 import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
 import { NavLink, useNavigate } from 'react-router-dom';
@@ -20,26 +6,18 @@ import toast, { Toaster } from 'react-hot-toast';
 import { AuthContext } from '../Context/AuthContext';
 
 const SignIn = () => {
-  // Get login function from AuthContext
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  // Vanta.js background effect references
-  const vantaRef = useRef(null); // DOM element reference for Vanta
-  const [vantaEffect, setVantaEffect] = useState(null); // Vanta effect instance
+  const vantaRef = useRef(null);
+  const [vantaEffect, setVantaEffect] = useState(null);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [show, setShow] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  // Form state management
-  const [email, setEmail] = useState(''); // Email input value
-  const [password, setPassword] = useState(''); // Password input value
-  const [show, setShow] = useState(false); // Password visibility toggle
-  const [error, setError] = useState(''); // Error message display
-  const [loading, setLoading] = useState(false); // Loading state during login
-
-  /**
-   * Initialize Vanta.js WAVES effect on component mount
-   * Creates animated 3D wave background using Three.js
-   * Cleanup: Destroys effect on component unmount
-   */
+  // Initialize Vanta.js waves background
   useEffect(() => {
     if (!vantaEffect && window.VANTA) {
       setVantaEffect(
@@ -65,15 +43,9 @@ const SignIn = () => {
     };
   }, [vantaEffect]);
 
-  // Toggle password visibility
   const handleToggle = () => setShow(!show);
 
-  /**
-   * Handle login form submission
-   * - Calls login function from AuthContext with email/password
-   * - Shows success toast and redirects to dashboard on success
-   * - Displays error message on failure
-   */
+  // Handle login form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
