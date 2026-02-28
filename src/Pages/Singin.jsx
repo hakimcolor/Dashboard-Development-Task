@@ -1,90 +1,81 @@
-import { auth } from '../Firebase/Firebase.confige';
-
-import React, { useContext, useState } from 'react';
+import { useContext, useState, useEffect, useRef } from 'react';
 import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
-import { FcGoogle } from 'react-icons/fc';
 import { NavLink, useNavigate } from 'react-router-dom';
-
-import {
-  GoogleAuthProvider,
-  signInWithPopup,
-  sendPasswordResetEmail,
-} from 'firebase/auth';
 import toast, { Toaster } from 'react-hot-toast';
 import { AuthContext } from '../Context/AuthContext';
 
-const provider = new GoogleAuthProvider();
-
 const SignIn = () => {
-  const { singinuser } = useContext(AuthContext);
+  const { login } = useContext(AuthContext);
   const navigate = useNavigate();
+  const vantaRef = useRef(null);
+  const [vantaEffect, setVantaEffect] = useState(null);
 
   const [email, setEmail] = useState('');
-  const [passcode, setPasscode] = useState('');
+  const [password, setPassword] = useState('');
   const [show, setShow] = useState(false);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!vantaEffect && window.VANTA) {
+      setVantaEffect(
+        window.VANTA.WAVES({
+          el: vantaRef.current,
+          mouseControls: true,
+          touchControls: true,
+          gyroControls: false,
+          minHeight: 200.0,
+          minWidth: 200.0,
+          scale: 1.0,
+          scaleMobile: 1.0,
+          color: 0x1a237e,
+          shininess: 30.0,
+          waveHeight: 15.0,
+          waveSpeed: 0.75,
+          zoom: 0.75,
+        })
+      );
+    }
+    return () => {
+      if (vantaEffect) vantaEffect.destroy();
+    };
+  }, [vantaEffect]);
 
   const handleToggle = () => setShow(!show);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
 
-    singinuser(email, passcode)
-      .then(() => {
-        setEmail('');
-        setPasscode('');
-        toast.success('Sign in successful!', { duration: 1000 });
-        navigate('/services');
-      })
-      .catch((err) => {
-        setError(err.message);
-        toast.error(err.message, { duration: 2000 });
-      });
-  };
-
-  const handleGoogleLogin = () => {
-    setError('');
-
-    signInWithPopup(auth, provider)
-      .then(() => {
-        setEmail('');
-        setPasscode('');
-        toast.success('Sign in successful!', { duration: 2000 });
-        navigate('/services');
-      })
-      .catch((err) => {
-        setError(err.message);
-        toast.error(err.message, { duration: 2000 });
-      });
-  };
-
-  const handleForgotPassword = () => {
-    if (!email) {
-      toast.error('Please enter your email first!', { duration: 2000 });
-      return;
+    try {
+      await login(email, password);
+      toast.success('Login successful!', { duration: 1500 });
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 500);
+    } catch (err) {
+      const errorMessage = err.message || 'Login failed. Please try again.';
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
     }
-
-    sendPasswordResetEmail(auth, email)
-      .then(() => {
-        toast.success('Password reset email sent! Check your Gmail inbox.', {
-          duration: 3000,
-        });
-      })
-      .catch((err) => {
-        toast.error(err.message, { duration: 2000 });
-      });
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-200 via-blue-50 to-blue-100 px-4">
+    <div
+      ref={vantaRef}
+      className="min-h-screen flex items-center justify-center px-4 relative pt-20 pb-10 overflow-hidden"
+    >
       <Toaster />
-      <div className="bg-white shadow-2xl rounded-3xl p-10 w-full max-w-md relative overflow-hidden">
-        <h2 className="text-3xl font-extrabold text-center text-gray-800 mb-2">
-          Welcome Back 👋
+
+      <div className="bg-white/95 backdrop-blur-sm shadow-2xl rounded-3xl p-10 w-full max-w-md relative z-10">
+        <h2 className="text-4xl font-extrabold text-center bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2 animate-fade-in">
+          Hello Again! 👋
         </h2>
-        <p className="text-center text-gray-500 mb-8">
-          Sign in to continue your journey
+        <p className="text-center text-gray-600 mb-8 animate-fade-in-delay">
+          Login to access your dashboard
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -98,7 +89,7 @@ const SignIn = () => {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email"
               required
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition duration-300"
+              className="w-full px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 text-gray-800 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all duration-300"
             />
           </div>
 
@@ -108,16 +99,16 @@ const SignIn = () => {
             </label>
             <input
               type={show ? 'text' : 'password'}
-              value={passcode}
-              onChange={(e) => setPasscode(e.target.value)}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
               required
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:outline-none pr-10 transition duration-300"
+              className="w-full px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 text-gray-800 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none pr-10 transition-all duration-300"
             />
             <button
               type="button"
               onClick={handleToggle}
-              className="absolute mt-6 right-3 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition duration-300"
+              className="absolute mt-6 right-3 -translate-y-1/2 text-blue-500 hover:text-blue-700 transition duration-300"
             >
               {show ? (
                 <AiOutlineEyeInvisible size={22} />
@@ -127,58 +118,25 @@ const SignIn = () => {
             </button>
           </div>
 
-          <div className="text-right mt-2">
-            <button
-              type="button"
-              onClick={handleForgotPassword}
-              disabled={!email}
-              className={`text-sm ${
-                email
-                  ? 'text-indigo-600 hover:underline'
-                  : 'text-gray-400 cursor-not-allowed'
-              }`}
-            >
-              Forgot Password?
-            </button>
-          </div>
-
           {error && <p className="text-red-500 text-sm">{error}</p>}
 
           <button
             type="submit"
-            className="w-full py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold rounded-xl shadow-lg hover:scale-105 transform transition duration-300 cursor-pointer"
+            disabled={loading}
+            className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Sign In
+            {loading ? 'Logging in...' : 'Sign In'}
           </button>
         </form>
 
-        <div className="flex items-center my-6">
-          <div className="flex-grow h-px bg-gray-300"></div>
-          <span className="px-3 text-gray-400 text-sm">or</span>
-          <div className="flex-grow h-px bg-gray-300"></div>
+        <div className="mt-6 p-4 bg-blue-50 rounded-xl">
+          <p className="text-sm text-gray-600 font-semibold mb-2">
+            Demo Credentials:
+          </p>
+          <p className="text-xs text-gray-600">Email: user1@example.com</p>
+          <p className="text-xs text-gray-600">Password: password123</p>
         </div>
-
-        <button
-          onClick={handleGoogleLogin}
-          className="w-full flex items-center justify-center gap-3 border border-gray-300 py-3 rounded-xl hover:bg-gray-100 transition duration-300"
-        >
-          <FcGoogle className="w-7 h-7" />
-          <span className="font-medium text-gray-700">
-            Continue with Google
-          </span>
-        </button>
-
-        <p className="text-sm text-center text-gray-500 mt-6">
-          Don’t have an account?{' '}
-          <NavLink
-            to="/signup"
-            className="text-indigo-600 font-medium hover:underline"
-          >
-            Sign Up
-          </NavLink>
-        </p>
       </div>
-      <div className=''>k</div>
     </div>
   );
 };

@@ -1,40 +1,60 @@
-import React, { useContext, useState } from 'react';
+import { useContext, useState, useEffect, useRef } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
-import { FcGoogle } from 'react-icons/fc';
-import {
-  signInWithPopup,
-  GoogleAuthProvider,
-  updateProfile,
-} from 'firebase/auth';
-import { auth } from '../Firebase/Firebase.confige';
+import { updateProfile } from 'firebase/auth';
 import { AuthContext } from '../Context/AuthContext';
 import toast, { Toaster } from 'react-hot-toast';
-
-const provider = new GoogleAuthProvider();
+import axios from 'axios';
 
 const SignUp = () => {
   const navigate = useNavigate();
   const { createUser } = useContext(AuthContext);
+  const vantaRef = useRef(null);
+  const [vantaEffect, setVantaEffect] = useState(null);
 
   const [email, setEmail] = useState('');
   const [passcode, setPasscode] = useState('');
   const [firstName, setFirstName] = useState('');
-  const [imgUrl, setImgUrl] = useState('');
+  const [profileFile, setProfileFile] = useState(null);
   const [show, setShow] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [uploading, setUploading] = useState(false);
+
+  useEffect(() => {
+    if (!vantaEffect && window.VANTA) {
+      setVantaEffect(
+        window.VANTA.WAVES({
+          el: vantaRef.current,
+          mouseControls: true,
+          touchControls: true,
+          gyroControls: false,
+          minHeight: 200.0,
+          minWidth: 200.0,
+          scale: 1.0,
+          scaleMobile: 1.0,
+          color: 0x1a237e,
+          shininess: 30.0,
+          waveHeight: 15.0,
+          waveSpeed: 0.75,
+          zoom: 0.75,
+        })
+      );
+    }
+    return () => {
+      if (vantaEffect) vantaEffect.destroy();
+    };
+  }, [vantaEffect]);
 
   const handleToggle = () => setShow(!show);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess(false);
 
     const terms = e.target.terms.checked;
     const firstNameValue = firstName.trim();
-    const imgUrlValue = imgUrl.trim();
     const emailValue = email.trim();
     const passwordValue = passcode.trim();
 
@@ -43,6 +63,13 @@ const SignUp = () => {
       toast.error('Please accept our terms and conditions.');
       return;
     }
+
+    if (!profileFile) {
+      setError('Please select a profile image.');
+      toast.error('Please select a profile image.');
+      return;
+    }
+
     if (passwordValue.length < 6) {
       setError('Password must be at least 6 characters long.');
       toast.error('Password must be at least 6 characters long.');
@@ -68,55 +95,73 @@ const SignUp = () => {
       return;
     }
 
-    createUser(emailValue, passwordValue, firstNameValue, imgUrlValue)
-      .then((res) => {
-        return updateProfile(res.user, {
-          displayName: firstNameValue,
-          photoURL: imgUrlValue,
-        }).then(() => {
-          e.target.reset();
-          setEmail('');
-          setPasscode('');
-          setFirstName('');
-          setImgUrl('');
-          setSuccess(true);
-          toast.success('Registration successful!');
-          navigate('/');
-        });
-      })
-      .catch((err) => {
-        setError(err.message);
-        toast.error(err.message);
-      });
-  };
+    try {
+      setUploading(true);
+      toast.loading('Uploading image...');
 
-  const handleGoogleSignUp = () => {
-    signInWithPopup(auth, provider)
-      .then((result) => {
-        setEmail('');
-        setPasscode('');
-        setSuccess(true);
-        toast.success('Google Sign Up successful!', result.user);
-        navigate('/');
-      })
-      .catch((error) => {
-        setError(error.message);
-        toast.error(error.message);
+      const formData = new FormData();
+      formData.append('image', profileFile);
+      const uploadRes = await axios.post(
+        `https://api.imgbb.com/1/upload?key=4069702c25ccc162b662f2c5ce170f8d`,
+        formData
+      );
+
+      const imgUrlValue = uploadRes.data.data.url;
+      toast.dismiss();
+      toast.success('Image uploaded successfully!');
+
+      // Create Firebase user
+      const res = await createUser(
+        emailValue,
+        passwordValue,
+        firstNameValue,
+        imgUrlValue
+      );
+
+      await updateProfile(res.user, {
+        displayName: firstNameValue,
+        photoURL: imgUrlValue,
       });
+
+      // Note: The backend API is read-only, so user data is stored in Firebase only
+      console.log('User data:', {
+        name: firstNameValue,
+        email: emailValue,
+        img: imgUrlValue,
+      });
+
+      e.target.reset();
+      setEmail('');
+      setPasscode('');
+      setFirstName('');
+      setProfileFile(null);
+      setSuccess(true);
+      setUploading(false);
+      toast.success('Registration successful!');
+      navigate('/');
+    } catch (err) {
+      setUploading(false);
+      toast.dismiss();
+      setError(err.message);
+      toast.error(err.message);
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-200 via-blue-50 to-blue-100  px-4 relative pt-20 pb-10">
+    <div
+      ref={vantaRef}
+      className="min-h-screen flex items-center justify-center px-4 relative pt-20 pb-10 overflow-hidden"
+    >
       <Toaster position="top-right" reverseOrder={false} />
 
-      <div className="bg-[#3b2f2f] shadow-2xl rounded-3xl p-10 w-full max-w-md border border-gray-700">
-        <h2 className="text-3xl font-extrabold text-center text-white mb-8">
-          Create Your Account
+      <div className="bg-white/95 backdrop-blur-sm shadow-2xl rounded-3xl p-10 w-full max-w-md relative z-10">
+        <h2 className="text-4xl font-extrabold text-center bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-8 animate-fade-in">
+          Join Us Today! 🚀
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="flex flex-col">
-            <label className="text-gray-200 mb-2">First Name</label>
+            <label className="text-gray-700 mb-2 font-medium">First Name</label>
             <input
               type="text"
               name="firstName"
@@ -124,25 +169,26 @@ const SignUp = () => {
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
               required
-              className="w-full px-4 py-3 bg-gray-700 text-white border border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
+              className="w-full px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 text-gray-800 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all duration-300"
             />
           </div>
 
           <div className="flex flex-col">
-            <label className="text-gray-200 mb-2">Profile Image URL</label>
+            <label className="text-gray-700 mb-2 font-medium">
+              Profile Image
+            </label>
             <input
-              type="text"
-              name="imgUrl"
-              placeholder="Enter image URL"
-              value={imgUrl}
-              onChange={(e) => setImgUrl(e.target.value)}
+              type="file"
+              name="profileImage"
+              accept="image/*"
+              onChange={(e) => setProfileFile(e.target.files[0])}
               required
-              className="w-full px-4 py-3 bg-gray-700 text-white border border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
+              className="w-full px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 text-gray-800 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all duration-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-gradient-to-r file:from-blue-500 file:to-indigo-500 file:text-white file:cursor-pointer hover:file:from-blue-600 hover:file:to-indigo-600"
             />
           </div>
 
           <div className="flex flex-col">
-            <label className="text-gray-200 mb-2">Email</label>
+            <label className="text-gray-700 mb-2 font-medium">Email</label>
             <input
               type="email"
               name="email"
@@ -150,12 +196,12 @@ const SignUp = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-3 bg-gray-700 text-white border border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
+              className="w-full px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 text-gray-800 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all duration-300"
             />
           </div>
 
           <div className="relative flex flex-col">
-            <label className="text-gray-200 mb-2">Password</label>
+            <label className="text-gray-700 mb-2 font-medium">Password</label>
             <input
               type={show ? 'text' : 'password'}
               name="password"
@@ -163,12 +209,12 @@ const SignUp = () => {
               value={passcode}
               onChange={(e) => setPasscode(e.target.value)}
               required
-              className="w-full px-4 py-3 bg-gray-700 text-white border border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none pr-12 transition"
+              className="w-full px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 text-gray-800 border-2 border-blue-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none pr-12 transition-all duration-300"
             />
             <button
               type="button"
               onClick={handleToggle}
-              className="absolute mt-14 right-4 -translate-y-1/2 text-gray-300 hover:text-white"
+              className="absolute mt-14 right-4 -translate-y-1/2 text-blue-500 hover:text-blue-700"
             >
               {show ? (
                 <AiOutlineEyeInvisible size={22} />
@@ -179,10 +225,17 @@ const SignUp = () => {
           </div>
 
           <div className="flex items-center gap-2 mt-2">
-            <input type="checkbox" name="terms" id="terms" />
-            <label htmlFor="terms" className="text-gray-300 text-sm">
+            <input
+              type="checkbox"
+              name="terms"
+              id="terms"
+              className="w-4 h-4 accent-blue-600"
+            />
+            <label htmlFor="terms" className="text-gray-600 text-sm">
               Accept our{' '}
-              <span className="text-cyan-500">terms and conditions</span>
+              <span className="text-blue-600 font-semibold">
+                terms and conditions
+              </span>
             </label>
           </div>
 
@@ -193,29 +246,16 @@ const SignUp = () => {
 
           <button
             type="submit"
-            className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition duration-300 cursor-pointer"
+            disabled={uploading}
+            className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transform hover:scale-105"
           >
-            Sign Up
+            {uploading ? 'Uploading...' : 'Sign Up'}
           </button>
         </form>
 
-        <div className="flex items-center my-6">
-          <div className="flex-grow h-px bg-gray-500"></div>
-          <span className="px-3 text-gray-400 text-sm">or</span>
-          <div className="flex-grow h-px bg-gray-500"></div>
-        </div>
-
-        <button
-          onClick={handleGoogleSignUp}
-          className="w-full flex items-center justify-center gap-3 border border-gray-600 py-3 rounded-xl hover:bg-gray-600 transition duration-300"
-        >
-          <FcGoogle className="w-7 h-7" />
-          <span className="font-medium text-white">Continue with Google</span>
-        </button>
-
-        <p className="text-sm text-center text-gray-300 mt-6">
+        <p className="text-sm text-center text-gray-600 mt-6">
           Already have an account?{' '}
-          <NavLink to="/" className="text-indigo-500 hover:underline">
+          <NavLink to="/" className="text-blue-600 font-bold hover:underline">
             Sign In
           </NavLink>
         </p>
