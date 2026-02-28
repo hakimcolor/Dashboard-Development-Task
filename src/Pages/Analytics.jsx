@@ -1,3 +1,15 @@
+/**
+ * Analytics Component
+ *
+ * Displays analytics data and performance metrics from the REST API.
+ * Features:
+ * - Fetches analytics from /api/analytics endpoint
+ * - Shows aggregate statistics: total views, clicks, conversions, conversion rate
+ * - Daily analytics table with calculated conversion rates
+ * - Responsive layout with stat cards and data table
+ * - Sidebar navigation with logout confirmation
+ */
+
 import { useContext, useState, useEffect } from 'react';
 import { AuthContext } from '../Context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -18,12 +30,19 @@ import toast, { Toaster } from 'react-hot-toast';
 import axios from 'axios';
 
 const Analytics = () => {
+  // Get authenticated user and logout function from AuthContext
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [analytics, setAnalytics] = useState([]);
-  const [loading, setLoading] = useState(true);
 
+  // State management
+  const [sidebarOpen, setSidebarOpen] = useState(false); // Mobile sidebar toggle
+  const [analytics, setAnalytics] = useState([]); // Analytics data from API
+  const [loading, setLoading] = useState(true); // Loading state
+
+  /**
+   * Fetch analytics data from API on component mount
+   * Retrieves daily analytics from /api/analytics endpoint
+   */
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
@@ -41,6 +60,10 @@ const Analytics = () => {
     fetchAnalytics();
   }, []);
 
+  /**
+   * Handle logout with confirmation dialog
+   * Shows toast notification with Yes/Cancel buttons
+   */
   const handleLogout = () => {
     toast(
       (t) => (
@@ -76,6 +99,13 @@ const Analytics = () => {
     );
   };
 
+  /**
+   * Calculate aggregate statistics from analytics data
+   * - totalViews: Sum of all views across all days
+   * - totalClicks: Sum of all clicks across all days
+   * - totalConversions: Sum of all conversions across all days
+   * - avgConversionRate: Average conversion rate percentage
+   */
   const totalViews = analytics.reduce((sum, item) => sum + item.views, 0);
   const totalClicks = analytics.reduce((sum, item) => sum + item.clicks, 0);
   const totalConversions = analytics.reduce(
@@ -85,6 +115,7 @@ const Analytics = () => {
   const avgConversionRate =
     totalClicks > 0 ? ((totalConversions / totalClicks) * 100).toFixed(2) : 0;
 
+  // Loading state: Show spinner while fetching analytics
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -97,107 +128,164 @@ const Analytics = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex">
       <Toaster position="top-center" />
-      {/* Sidebar - Same as Users page */}
+      {/* Sidebar - Premium Dark Theme */}
       <aside
         className={`${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } lg:translate-x-0 fixed lg:static inset-y-0 left-0 z-50 w-72 bg-white border-r border-gray-200 transition-transform duration-300 ease-in-out`}
+        } lg:translate-x-0 fixed lg:static inset-y-0 left-0 z-50 w-72 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 transition-transform duration-300 ease-in-out shadow-2xl`}
       >
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-8">
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              TaskFlow
-            </h1>
+        <div className="p-6 h-full flex flex-col relative overflow-hidden">
+          {/* Decorative background elements */}
+          <div className="absolute top-0 right-0 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-40 h-40 bg-purple-500/10 rounded-full blur-3xl"></div>
+
+          {/* Logo Section */}
+          <div className="flex items-center justify-between mb-8 relative z-10">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/50 transform hover:scale-110 transition-transform duration-300">
+                <AiOutlineBarChart className="text-white text-xl" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-white">TaskFlow</h1>
+                <p className="text-xs text-gray-400">Dashboard v1.0</p>
+              </div>
+            </div>
             <button
               onClick={() => setSidebarOpen(false)}
-              className="lg:hidden text-gray-700"
+              className="lg:hidden text-gray-400 hover:text-white hover:bg-white/10 p-2 rounded-lg transition"
             >
               <AiOutlineClose size={24} />
             </button>
           </div>
 
-          <div className="mb-8 pb-6 border-b border-gray-200">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full border-2 border-blue-500 bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold text-lg">
-                {user?.email?.charAt(0).toUpperCase() || 'U'}
+          {/* User Profile Card */}
+          <div className="mb-8 pb-6 border-b border-gray-700/50 relative z-10">
+            <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-xl backdrop-blur-sm border border-white/10 hover:border-white/20 transition-all duration-300 group">
+              <div className="relative">
+                <div className="w-12 h-12 rounded-xl border-2 border-blue-400 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-blue-500/50 group-hover:scale-110 transition-transform duration-300">
+                  {user?.email?.charAt(0).toUpperCase() || 'U'}
+                </div>
+                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-slate-900 animate-pulse"></div>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-gray-800 truncate">
+                <p className="font-semibold text-white truncate">
                   {user?.email?.split('@')[0] || 'User'}
                 </p>
-                <p className="text-sm text-gray-500 truncate">{user?.email}</p>
+                <p className="text-xs text-gray-400 truncate">{user?.email}</p>
               </div>
             </div>
           </div>
 
-          <nav className="space-y-2">
+          {/* Navigation */}
+          <nav className="space-y-2 flex-1 relative z-10">
             <a
               href="/dashboard"
-              className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100 transition"
+              className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300 group"
             >
-              <AiOutlineHome size={20} />
-              <span className="font-medium">Dashboard</span>
+              <div className="w-10 h-10 bg-white/5 rounded-lg flex items-center justify-center group-hover:bg-white/10 transition-colors">
+                <AiOutlineHome size={20} />
+              </div>
+              <div className="flex-1">
+                <span className="font-semibold">Dashboard</span>
+                <p className="text-xs text-gray-500 group-hover:text-gray-400">
+                  Overview & Stats
+                </p>
+              </div>
             </a>
+
             <a
               href="/users"
-              className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100 transition"
+              className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300 group"
             >
-              <AiOutlineUser size={20} />
-              <span className="font-medium">Users</span>
+              <div className="w-10 h-10 bg-white/5 rounded-lg flex items-center justify-center group-hover:bg-white/10 transition-colors">
+                <AiOutlineUser size={20} />
+              </div>
+              <div className="flex-1">
+                <span className="font-semibold">Users</span>
+                <p className="text-xs text-gray-500 group-hover:text-gray-400">
+                  Manage Users
+                </p>
+              </div>
             </a>
+
             <a
               href="/analytics"
-              className="flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white transition"
+              className="flex items-center gap-3 px-4 py-3.5 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/50 transform hover:scale-105 transition-all duration-300 group"
             >
-              <AiOutlineBarChart size={20} />
-              <span className="font-medium">Analytics</span>
+              <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center group-hover:bg-white/30 transition-colors">
+                <AiOutlineBarChart size={20} />
+              </div>
+              <div className="flex-1">
+                <span className="font-semibold">Analytics</span>
+                <p className="text-xs text-blue-100">View Reports</p>
+              </div>
             </a>
+
             <a
               href="/products"
-              className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100 transition"
+              className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300 group"
             >
-              <AiOutlineShoppingCart size={20} />
-              <span className="font-medium">Products</span>
+              <div className="w-10 h-10 bg-white/5 rounded-lg flex items-center justify-center group-hover:bg-white/10 transition-colors">
+                <AiOutlineShoppingCart size={20} />
+              </div>
+              <div className="flex-1">
+                <span className="font-semibold">Products</span>
+                <p className="text-xs text-gray-500 group-hover:text-gray-400">
+                  Product List
+                </p>
+              </div>
             </a>
           </nav>
 
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition mt-8 w-full"
-          >
-            <AiOutlineLogout size={20} />
-            <span className="font-medium">Logout</span>
-          </button>
+          {/* Logout Button */}
+          <div className="relative z-10">
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all duration-300 w-full group border border-red-500/20 hover:border-red-500/40"
+            >
+              <div className="w-10 h-10 bg-red-500/10 rounded-lg flex items-center justify-center group-hover:bg-red-500/20 transition-colors">
+                <AiOutlineLogout size={20} />
+              </div>
+              <div className="flex-1 text-left">
+                <span className="font-semibold">Logout</span>
+                <p className="text-xs text-gray-500 group-hover:text-red-400">
+                  Sign out
+                </p>
+              </div>
+            </button>
+          </div>
         </div>
       </aside>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="bg-white border-b border-gray-200 p-4 lg:p-6">
+        <header className="bg-white/80 backdrop-blur-md border-b border-gray-200 p-4 lg:p-6 sticky top-0 z-40">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="lg:hidden text-gray-700"
+                className="lg:hidden text-gray-700 hover:bg-gray-100 p-2 rounded-lg transition"
               >
                 <AiOutlineMenu size={24} />
               </button>
               <div>
-                <h2 className="text-2xl font-bold text-gray-800">Analytics</h2>
-                <p className="text-sm text-gray-500">
+                <h2 className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                  Analytics Dashboard 📊
+                </h2>
+                <p className="text-sm text-gray-500 mt-1">
                   Track your performance metrics
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-3">
-              <button className="relative p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
+              <button className="relative p-3 text-gray-600 hover:bg-gray-100 rounded-xl transition">
                 <AiOutlineBell size={24} />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse"></span>
               </button>
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
+              <div className="hidden sm:flex w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl items-center justify-center text-white font-bold shadow-lg">
                 {user?.email?.charAt(0).toUpperCase() || 'U'}
               </div>
             </div>
@@ -341,7 +429,7 @@ const Analytics = () => {
       {sidebarOpen && (
         <div
           onClick={() => setSidebarOpen(false)}
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden backdrop-blur-sm"
         ></div>
       )}
     </div>

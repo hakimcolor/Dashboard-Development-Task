@@ -10,6 +10,7 @@
  * - Logout confirmation dialog using react-hot-toast
  * - Premium dark theme sidebar with glass morphism effects
  * - Loading and error states with retry functionality
+ * - Dark mode / Light mode toggle
  */
 
 import { useContext, useState, useEffect } from 'react';
@@ -29,6 +30,7 @@ import {
   AiOutlineTrophy,
   AiOutlineFire,
 } from 'react-icons/ai';
+import { BsSun, BsMoon } from 'react-icons/bs';
 import toast, { Toaster } from 'react-hot-toast';
 import axios from 'axios';
 
@@ -42,6 +44,37 @@ const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState(null); // API data storage
   const [loading, setLoading] = useState(true); // Loading state for API call
   const [error, setError] = useState(null); // Error state for failed API calls
+  const [darkMode, setDarkMode] = useState(false); // Dark mode toggle state
+
+  /**
+   * Load dark mode preference from localStorage on component mount
+   */
+  useEffect(() => {
+    const savedMode = localStorage.getItem('darkMode');
+    if (savedMode === 'true') {
+      setDarkMode(true);
+    }
+  }, []);
+
+  /**
+   * Save dark mode preference to localStorage whenever it changes
+   */
+  useEffect(() => {
+    localStorage.setItem('darkMode', darkMode.toString());
+  }, [darkMode]);
+
+  /**
+   * Toggle dark mode on/off
+   */
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
+    toast.success(
+      darkMode ? 'Light mode activated ☀️' : 'Dark mode activated 🌙',
+      {
+        duration: 2000,
+      }
+    );
+  };
 
   /**
    * Fetch dashboard data from API
@@ -150,7 +183,9 @@ const Dashboard = () => {
 
   // Main dashboard render with sidebar and content
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex">
+    <div
+      className={`min-h-screen flex ${darkMode ? 'bg-gradient-to-br from-gray-900 via-slate-900 to-gray-900' : 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50'}`}
+    >
       {/* Toast notification container for logout confirmation */}
       <Toaster position="top-center" />
 
@@ -286,27 +321,46 @@ const Dashboard = () => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <header className="bg-white/80 backdrop-blur-md border-b border-gray-200 p-4 lg:p-6 sticky top-0 z-40">
+        <header
+          className={`${darkMode ? 'bg-slate-800/80 border-slate-700' : 'bg-white/80'} backdrop-blur-md border-b border-gray-200 p-4 lg:p-6 sticky top-0 z-40`}
+        >
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="lg:hidden text-gray-700 hover:bg-gray-100 p-2 rounded-lg transition"
+                className={`lg:hidden ${darkMode ? 'text-gray-300 hover:bg-slate-700' : 'text-gray-700 hover:bg-gray-100'} p-2 rounded-lg transition`}
               >
                 <AiOutlineMenu size={24} />
               </button>
               <div>
-                <h2 className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                <h2
+                  className={`text-2xl lg:text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent`}
+                >
                   Welcome back, {user?.email?.split('@')[0] || 'User'}! 👋
                 </h2>
-                <p className="text-sm text-gray-500 mt-1">
+                <p
+                  className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'} mt-1`}
+                >
                   Here's what's happening with your projects today
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-3">
-              <button className="relative p-3 text-gray-600 hover:bg-gray-100 rounded-xl transition">
+              {/* Dark Mode Toggle Button */}
+              <button
+                onClick={toggleDarkMode}
+                className={`p-3 ${darkMode ? 'text-yellow-400 hover:bg-slate-700' : 'text-gray-600 hover:bg-gray-100'} rounded-xl transition transform hover:scale-110`}
+                title={
+                  darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'
+                }
+              >
+                {darkMode ? <BsSun size={24} /> : <BsMoon size={24} />}
+              </button>
+
+              <button
+                className={`relative p-3 ${darkMode ? 'text-gray-300 hover:bg-slate-700' : 'text-gray-600 hover:bg-gray-100'} rounded-xl transition`}
+              >
                 <AiOutlineBell size={24} />
                 <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse"></span>
               </button>
@@ -322,7 +376,9 @@ const Dashboard = () => {
           {/* Stats Cards: Display key metrics from API (totalUsers, activeUsers, revenue, growth) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6">
             {/* Total Users Card */}
-            <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+            <div
+              className={`${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-100'} rounded-2xl shadow-lg p-6 border hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1`}
+            >
               <div className="flex items-center justify-between mb-4">
                 <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
                   <AiOutlineUser size={28} className="text-white" />
@@ -332,17 +388,23 @@ const Dashboard = () => {
                   <span>+{dashboardData?.overview?.growth}%</span>
                 </div>
               </div>
-              <p className="text-gray-500 text-sm mb-1 font-medium">
+              <p
+                className={`${darkMode ? 'text-gray-400' : 'text-gray-500'} text-sm mb-1 font-medium`}
+              >
                 Total Users
               </p>
-              <p className="text-3xl font-bold text-gray-800">
+              <p
+                className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}
+              >
                 {dashboardData?.overview?.totalUsers?.toLocaleString()}
               </p>
               <div className="mt-3 h-1 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full"></div>
             </div>
 
             {/* Active Users Card */}
-            <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+            <div
+              className={`${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-100'} rounded-2xl shadow-lg p-6 border hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1`}
+            >
               <div className="flex items-center justify-between mb-4">
                 <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
                   <AiOutlineFire size={28} className="text-white" />
@@ -352,17 +414,23 @@ const Dashboard = () => {
                   <span>+12.5%</span>
                 </div>
               </div>
-              <p className="text-gray-500 text-sm mb-1 font-medium">
+              <p
+                className={`${darkMode ? 'text-gray-400' : 'text-gray-500'} text-sm mb-1 font-medium`}
+              >
                 Active Users
               </p>
-              <p className="text-3xl font-bold text-gray-800">
+              <p
+                className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}
+              >
                 {dashboardData?.overview?.activeUsers?.toLocaleString()}
               </p>
               <div className="mt-3 h-1 bg-gradient-to-r from-green-500 to-green-600 rounded-full"></div>
             </div>
 
             {/* Revenue Card */}
-            <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+            <div
+              className={`${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-100'} rounded-2xl shadow-lg p-6 border hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1`}
+            >
               <div className="flex items-center justify-between mb-4">
                 <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
                   <AiOutlineShoppingCart size={28} className="text-white" />
@@ -372,15 +440,23 @@ const Dashboard = () => {
                   <span>+8.2%</span>
                 </div>
               </div>
-              <p className="text-gray-500 text-sm mb-1 font-medium">Revenue</p>
-              <p className="text-3xl font-bold text-gray-800">
+              <p
+                className={`${darkMode ? 'text-gray-400' : 'text-gray-500'} text-sm mb-1 font-medium`}
+              >
+                Revenue
+              </p>
+              <p
+                className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}
+              >
                 ${dashboardData?.overview?.revenue?.toLocaleString()}
               </p>
               <div className="mt-3 h-1 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full"></div>
             </div>
 
             {/* Growth Rate Card */}
-            <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+            <div
+              className={`${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-100'} rounded-2xl shadow-lg p-6 border hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1`}
+            >
               <div className="flex items-center justify-between mb-4">
                 <div className="w-14 h-14 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
                   <AiOutlineBarChart size={28} className="text-white" />
@@ -390,10 +466,14 @@ const Dashboard = () => {
                   <span>+15.3%</span>
                 </div>
               </div>
-              <p className="text-gray-500 text-sm mb-1 font-medium">
+              <p
+                className={`${darkMode ? 'text-gray-400' : 'text-gray-500'} text-sm mb-1 font-medium`}
+              >
                 Growth Rate
               </p>
-              <p className="text-3xl font-bold text-gray-800">
+              <p
+                className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}
+              >
                 {dashboardData?.overview?.growth}%
               </p>
               <div className="mt-3 h-1 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full"></div>
