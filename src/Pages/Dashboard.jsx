@@ -97,16 +97,11 @@ const Dashboard = () => {
     }
   };
 
-  // Fetch dashboard data on component mount
   useEffect(() => {
     fetchDashboardData();
   }, []);
 
-  /**
-   * Handle logout with confirmation dialog
-   * Shows a toast notification with Yes/Cancel buttons
-   * On confirmation: clears auth state, shows success message, redirects to login
-   */
+  // Logout with confirmation
   const handleLogout = () => {
     toast(
       (t) => (
@@ -142,7 +137,6 @@ const Dashboard = () => {
     );
   };
 
-  // Loading state: Show spinner while fetching data from API
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
@@ -161,7 +155,6 @@ const Dashboard = () => {
     );
   }
 
-  // Error state: Show error message with retry button
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
@@ -371,9 +364,7 @@ const Dashboard = () => {
           </div>
         </header>
 
-        {/* Dashboard Content: Stats cards, recent users table, top products */}
         <main className="flex-1 p-4 lg:p-6 overflow-auto">
-          {/* Stats Cards: Display key metrics from API (totalUsers, activeUsers, revenue, growth) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6">
             {/* Total Users Card */}
             <div
@@ -480,9 +471,7 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Two-column layout: Recent users table and top products sidebar */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Recent Users: Table showing first 5 users from API with avatar, email, status, join date */}
             <div className="lg:col-span-2 bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
@@ -587,7 +576,6 @@ const Dashboard = () => {
         </main>
       </div>
 
-      {/* Mobile overlay: Dark backdrop when sidebar is open, click to close */}
       {sidebarOpen && (
         <div
           onClick={() => setSidebarOpen(false)}

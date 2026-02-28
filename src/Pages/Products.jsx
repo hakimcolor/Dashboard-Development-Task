@@ -1,16 +1,4 @@
-/**
- * Products Component
- *
- * Displays product catalog with search and filter functionality.
- * Features:
- * - Fetches products from /api/products endpoint
- * - Search functionality to filter products by name
- * - Category filter dropdown
- * - Statistics cards showing total products, revenue, and sales
- * - Responsive grid layout with product cards
- * - Sidebar navigation with logout confirmation
- */
-
+// Products page - catalog with search and filters
 import { useContext, useState, useEffect } from 'react';
 import { AuthContext } from '../Context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -30,21 +18,18 @@ import toast, { Toaster } from 'react-hot-toast';
 import axios from 'axios';
 
 const Products = () => {
-  // Get authenticated user and logout function from AuthContext
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  // State management
-  const [sidebarOpen, setSidebarOpen] = useState(false); // Mobile sidebar toggle
-  const [products, setProducts] = useState([]); // Products list from API
-  const [loading, setLoading] = useState(true); // Loading state
-  const [searchTerm, setSearchTerm] = useState(''); // Search filter input
-  const [filterCategory, setFilterCategory] = useState('all'); // Category filter
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterCategory, setFilterCategory] = useState('all');
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
-  /**
-   * Fetch products from API on component mount
-   * Retrieves all products from /api/products endpoint
-   */
+  // Fetch products from API
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -62,10 +47,28 @@ const Products = () => {
     fetchProducts();
   }, []);
 
-  /**
-   * Handle logout with confirmation dialog
-   * Shows toast notification with Yes/Cancel buttons
-   */
+  // Fetch product details by ID
+  const fetchProductDetails = async (productId) => {
+    try {
+      const response = await axios.get(
+        `https://task-api-eight-flax.vercel.app/api/products/${productId}`
+      );
+      setSelectedProduct(response.data);
+      setShowModal(true);
+      toast.success('Product details loaded!');
+    } catch (error) {
+      console.error('Error fetching product details:', error);
+      toast.error('Failed to load product details');
+    }
+  };
+
+  // Close modal
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedProduct(null);
+  };
+
+  // Logout with confirmation
   const handleLogout = () => {
     toast(
       (t) => (
@@ -101,17 +104,10 @@ const Products = () => {
     );
   };
 
-  /**
-   * Extract unique categories from products
-   * Creates dropdown options: 'all' + unique categories from product data
-   */
+  // Extract categories
   const categories = ['all', ...new Set(products.map((p) => p.category))];
 
-  /**
-   * Filter products based on search term and category
-   * - Search: Filters by product name (case-insensitive)
-   * - Category: Shows all if 'all' selected, otherwise filters by category
-   */
+  // Filter products
   const filteredProducts = products.filter((p) => {
     const matchesSearch = p.name
       .toLowerCase()
@@ -121,11 +117,7 @@ const Products = () => {
     return matchesSearch && matchesCategory;
   });
 
-  /**
-   * Calculate aggregate statistics
-   * - totalRevenue: Sum of (price * sales) for all products
-   * - totalSales: Sum of all sales across products
-   */
+  // Calculate totals
   const totalRevenue = products.reduce((sum, p) => sum + p.price * p.sales, 0);
   const totalSales = products.reduce((sum, p) => sum + p.sales, 0);
 
@@ -379,7 +371,8 @@ const Products = () => {
             {filteredProducts.map((product) => (
               <div
                 key={product.id}
-                className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition"
+                className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition cursor-pointer"
+                onClick={() => fetchProductDetails(product.id)}
               >
                 <div className="flex items-center justify-between mb-4">
                   <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center text-white font-bold text-lg">
@@ -408,11 +401,143 @@ const Products = () => {
                     </p>
                   </div>
                 </div>
+                <button className="mt-4 w-full py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition text-sm font-semibold">
+                  View Details
+                </button>
               </div>
             ))}
           </div>
         </main>
       </div>
+
+      {/* Product Detail Modal */}
+      {showModal && selectedProduct && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 rounded-t-3xl flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center text-white font-bold text-2xl backdrop-blur-sm">
+                  {selectedProduct.name.charAt(0)}
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold">{selectedProduct.name}</h2>
+                  <p className="text-blue-100 text-sm">
+                    Product ID: {selectedProduct.id}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={closeModal}
+                className="text-white hover:bg-white/20 p-2 rounded-lg transition"
+              >
+                <AiOutlineClose size={24} />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 space-y-6">
+              {/* Category Badge */}
+              <div className="flex items-center gap-2">
+                <span className="px-4 py-2 rounded-full text-sm font-semibold bg-blue-100 text-blue-700">
+                  {selectedProduct.category}
+                </span>
+                <span className="px-4 py-2 rounded-full text-sm font-semibold bg-green-100 text-green-700">
+                  In Stock
+                </span>
+              </div>
+
+              {/* Price and Sales Info */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">
+                  <p className="text-gray-600 text-sm mb-1">Price</p>
+                  <p className="text-4xl font-bold text-blue-600">
+                    ${selectedProduct.price}
+                  </p>
+                </div>
+                <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-100">
+                  <p className="text-gray-600 text-sm mb-1">Total Sales</p>
+                  <p className="text-4xl font-bold text-purple-600">
+                    {selectedProduct.sales}
+                  </p>
+                </div>
+              </div>
+
+              {/* Revenue Calculation */}
+              <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-100">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-600 text-sm mb-1">Total Revenue</p>
+                    <p className="text-3xl font-bold text-green-600">
+                      $
+                      {(
+                        selectedProduct.price * selectedProduct.sales
+                      ).toLocaleString()}
+                    </p>
+                  </div>
+                  <AiOutlineDollar
+                    size={48}
+                    className="text-green-600 opacity-20"
+                  />
+                </div>
+              </div>
+
+              {/* Product Description */}
+              <div className="bg-gray-50 rounded-2xl p-6">
+                <h3 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+                  <AiOutlineShoppingCart className="text-blue-600" />
+                  Product Description
+                </h3>
+                <p className="text-gray-600 leading-relaxed">
+                  {selectedProduct.description ||
+                    `${selectedProduct.name} is a premium product in the ${selectedProduct.category} category. This high-quality item has been popular among our customers with ${selectedProduct.sales} units sold. Perfect for those looking for reliable and efficient solutions.`}
+                </p>
+              </div>
+
+              {/* Additional Details */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <p className="text-gray-500 text-sm mb-1">Category</p>
+                  <p className="text-gray-800 font-semibold">
+                    {selectedProduct.category}
+                  </p>
+                </div>
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <p className="text-gray-500 text-sm mb-1">Product ID</p>
+                  <p className="text-gray-800 font-semibold">
+                    #{selectedProduct.id}
+                  </p>
+                </div>
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <p className="text-gray-500 text-sm mb-1">Unit Price</p>
+                  <p className="text-gray-800 font-semibold">
+                    ${selectedProduct.price}
+                  </p>
+                </div>
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <p className="text-gray-500 text-sm mb-1">Units Sold</p>
+                  <p className="text-gray-800 font-semibold">
+                    {selectedProduct.sales}
+                  </p>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-4">
+                <button className="flex-1 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition font-semibold">
+                  Edit Product
+                </button>
+                <button
+                  onClick={closeModal}
+                  className="flex-1 py-3 bg-gray-200 text-gray-800 rounded-xl hover:bg-gray-300 transition font-semibold"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {sidebarOpen && (
         <div

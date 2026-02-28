@@ -59,10 +59,7 @@ const Users = () => {
     fetchUsers();
   }, []);
 
-  /**
-   * Handle logout with confirmation dialog
-   * Shows toast notification with Yes/Cancel buttons
-   */
+  // Logout with confirmation
   const handleLogout = () => {
     toast(
       (t) => (
@@ -98,17 +95,13 @@ const Users = () => {
     );
   };
 
-  /**
-   * Filter users based on search term
-   * Searches through both name and email fields (case-insensitive)
-   */
+  // Filter users by search term
   const filteredUsers = users.filter(
     (u) =>
       u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       u.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Loading state: Show spinner while fetching users
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">

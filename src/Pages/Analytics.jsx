@@ -60,10 +60,7 @@ const Analytics = () => {
     fetchAnalytics();
   }, []);
 
-  /**
-   * Handle logout with confirmation dialog
-   * Shows toast notification with Yes/Cancel buttons
-   */
+  // Logout with confirmation
   const handleLogout = () => {
     toast(
       (t) => (
@@ -99,13 +96,7 @@ const Analytics = () => {
     );
   };
 
-  /**
-   * Calculate aggregate statistics from analytics data
-   * - totalViews: Sum of all views across all days
-   * - totalClicks: Sum of all clicks across all days
-   * - totalConversions: Sum of all conversions across all days
-   * - avgConversionRate: Average conversion rate percentage
-   */
+  // Calculate totals
   const totalViews = analytics.reduce((sum, item) => sum + item.views, 0);
   const totalClicks = analytics.reduce((sum, item) => sum + item.clicks, 0);
   const totalConversions = analytics.reduce(
@@ -115,7 +106,6 @@ const Analytics = () => {
   const avgConversionRate =
     totalClicks > 0 ? ((totalConversions / totalClicks) * 100).toFixed(2) : 0;
 
-  // Loading state: Show spinner while fetching analytics
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
