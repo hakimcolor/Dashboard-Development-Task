@@ -1,3 +1,17 @@
+/**
+ * Dashboard Component
+ *
+ * Main dashboard page that displays overview statistics, recent users, and top products.
+ * Features:
+ * - Fetches dynamic data from REST API (/api/dashboard endpoint)
+ * - Displays key metrics: total users, active users, revenue, growth rate
+ * - Shows recent users table and top products list
+ * - Responsive sidebar navigation with mobile support
+ * - Logout confirmation dialog using react-hot-toast
+ * - Premium dark theme sidebar with glass morphism effects
+ * - Loading and error states with retry functionality
+ */
+
 import { useContext, useState, useEffect } from 'react';
 import { AuthContext } from '../Context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -19,13 +33,21 @@ import toast, { Toaster } from 'react-hot-toast';
 import axios from 'axios';
 
 const Dashboard = () => {
+  // Get authenticated user and logout function from AuthContext
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [dashboardData, setDashboardData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
+  // State management
+  const [sidebarOpen, setSidebarOpen] = useState(false); // Mobile sidebar toggle
+  const [dashboardData, setDashboardData] = useState(null); // API data storage
+  const [loading, setLoading] = useState(true); // Loading state for API call
+  const [error, setError] = useState(null); // Error state for failed API calls
+
+  /**
+   * Fetch dashboard data from API
+   * Retrieves overview stats, users list, and products from /api/dashboard endpoint
+   * Handles loading and error states
+   */
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
@@ -42,10 +64,16 @@ const Dashboard = () => {
     }
   };
 
+  // Fetch dashboard data on component mount
   useEffect(() => {
     fetchDashboardData();
   }, []);
 
+  /**
+   * Handle logout with confirmation dialog
+   * Shows a toast notification with Yes/Cancel buttons
+   * On confirmation: clears auth state, shows success message, redirects to login
+   */
   const handleLogout = () => {
     toast(
       (t) => (
@@ -81,6 +109,7 @@ const Dashboard = () => {
     );
   };
 
+  // Loading state: Show spinner while fetching data from API
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
@@ -99,6 +128,7 @@ const Dashboard = () => {
     );
   }
 
+  // Error state: Show error message with retry button
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
@@ -118,89 +148,138 @@ const Dashboard = () => {
     );
   }
 
+  // Main dashboard render with sidebar and content
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex">
+      {/* Toast notification container for logout confirmation */}
       <Toaster position="top-center" />
 
-      {/* Sidebar */}
+      {/* Sidebar: Premium dark theme with glass morphism, responsive mobile drawer */}
       <aside
         className={`${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } lg:translate-x-0 fixed lg:static inset-y-0 left-0 z-50 w-72 bg-white border-r border-gray-200 transition-transform duration-300 ease-in-out shadow-xl`}
+        } lg:translate-x-0 fixed lg:static inset-y-0 left-0 z-50 w-72 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 transition-transform duration-300 ease-in-out shadow-2xl`}
       >
-        <div className="p-6 h-full flex flex-col">
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
+        <div className="p-6 h-full flex flex-col relative overflow-hidden">
+          {/* Decorative background elements */}
+          <div className="absolute top-0 right-0 w-40 h-40 bg-blue-500/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-40 h-40 bg-purple-500/10 rounded-full blur-3xl"></div>
+
+          {/* Logo Section */}
+          <div className="flex items-center justify-between mb-8 relative z-10">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/50 transform hover:scale-110 transition-transform duration-300">
                 <AiOutlineTrophy className="text-white text-xl" />
               </div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                TaskFlow
-              </h1>
+              <div>
+                <h1 className="text-2xl font-bold text-white">TaskFlow</h1>
+                <p className="text-xs text-gray-400">Dashboard v1.0</p>
+              </div>
             </div>
             <button
               onClick={() => setSidebarOpen(false)}
-              className="lg:hidden text-gray-700 hover:bg-gray-100 p-2 rounded-lg transition"
+              className="lg:hidden text-gray-400 hover:text-white hover:bg-white/10 p-2 rounded-lg transition"
             >
               <AiOutlineClose size={24} />
             </button>
           </div>
 
-          {/* User Profile */}
-          <div className="mb-8 pb-6 border-b border-gray-200">
-            <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl">
-              <div className="w-12 h-12 rounded-full border-2 border-blue-500 bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                {user?.email?.charAt(0).toUpperCase() || 'U'}
+          {/* User Profile Card */}
+          <div className="mb-8 pb-6 border-b border-gray-700/50 relative z-10">
+            <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-xl backdrop-blur-sm border border-white/10 hover:border-white/20 transition-all duration-300 group">
+              <div className="relative">
+                <div className="w-12 h-12 rounded-xl border-2 border-blue-400 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-blue-500/50 group-hover:scale-110 transition-transform duration-300">
+                  {user?.email?.charAt(0).toUpperCase() || 'U'}
+                </div>
+                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-slate-900 animate-pulse"></div>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-gray-800 truncate">
+                <p className="font-semibold text-white truncate">
                   {user?.email?.split('@')[0] || 'User'}
                 </p>
-                <p className="text-sm text-gray-500 truncate">{user?.email}</p>
+                <p className="text-xs text-gray-400 truncate">{user?.email}</p>
               </div>
             </div>
           </div>
 
           {/* Navigation */}
-          <nav className="space-y-2 flex-1">
+          <nav className="space-y-2 flex-1 relative z-10">
             <a
               href="/dashboard"
-              className="flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg transform transition hover:scale-105"
+              className="flex items-center gap-3 px-4 py-3.5 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/50 transform hover:scale-105 transition-all duration-300 group"
             >
-              <AiOutlineHome size={20} />
-              <span className="font-medium">Dashboard</span>
+              <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center group-hover:bg-white/30 transition-colors">
+                <AiOutlineHome size={20} />
+              </div>
+              <div className="flex-1">
+                <span className="font-semibold">Dashboard</span>
+                <p className="text-xs text-blue-100">Overview & Stats</p>
+              </div>
             </a>
+
             <a
               href="/users"
-              className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition"
+              className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300 group"
             >
-              <AiOutlineUser size={20} />
-              <span className="font-medium">Users</span>
+              <div className="w-10 h-10 bg-white/5 rounded-lg flex items-center justify-center group-hover:bg-white/10 transition-colors">
+                <AiOutlineUser size={20} />
+              </div>
+              <div className="flex-1">
+                <span className="font-semibold">Users</span>
+                <p className="text-xs text-gray-500 group-hover:text-gray-400">
+                  Manage Users
+                </p>
+              </div>
             </a>
+
             <a
               href="/analytics"
-              className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition"
+              className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300 group"
             >
-              <AiOutlineBarChart size={20} />
-              <span className="font-medium">Analytics</span>
+              <div className="w-10 h-10 bg-white/5 rounded-lg flex items-center justify-center group-hover:bg-white/10 transition-colors">
+                <AiOutlineBarChart size={20} />
+              </div>
+              <div className="flex-1">
+                <span className="font-semibold">Analytics</span>
+                <p className="text-xs text-gray-500 group-hover:text-gray-400">
+                  View Reports
+                </p>
+              </div>
             </a>
+
             <a
               href="/products"
-              className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition"
+              className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300 group"
             >
-              <AiOutlineShoppingCart size={20} />
-              <span className="font-medium">Products</span>
+              <div className="w-10 h-10 bg-white/5 rounded-lg flex items-center justify-center group-hover:bg-white/10 transition-colors">
+                <AiOutlineShoppingCart size={20} />
+              </div>
+              <div className="flex-1">
+                <span className="font-semibold">Products</span>
+                <p className="text-xs text-gray-500 group-hover:text-gray-400">
+                  Product List
+                </p>
+              </div>
             </a>
           </nav>
 
           {/* Logout Button */}
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition mt-4 w-full"
-          >
-            <AiOutlineLogout size={20} />
-            <span className="font-medium">Logout</span>
-          </button>
+          <div className="relative z-10">
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all duration-300 w-full group border border-red-500/20 hover:border-red-500/40"
+            >
+              <div className="w-10 h-10 bg-red-500/10 rounded-lg flex items-center justify-center group-hover:bg-red-500/20 transition-colors">
+                <AiOutlineLogout size={20} />
+              </div>
+              <div className="flex-1 text-left">
+                <span className="font-semibold">Logout</span>
+                <p className="text-xs text-gray-500 group-hover:text-red-400">
+                  Sign out
+                </p>
+              </div>
+            </button>
+          </div>
         </div>
       </aside>
 
@@ -238,9 +317,9 @@ const Dashboard = () => {
           </div>
         </header>
 
-        {/* Dashboard Content */}
+        {/* Dashboard Content: Stats cards, recent users table, top products */}
         <main className="flex-1 p-4 lg:p-6 overflow-auto">
-          {/* Stats Cards */}
+          {/* Stats Cards: Display key metrics from API (totalUsers, activeUsers, revenue, growth) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6">
             {/* Total Users Card */}
             <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
@@ -321,8 +400,9 @@ const Dashboard = () => {
             </div>
           </div>
 
+          {/* Two-column layout: Recent users table and top products sidebar */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Recent Users */}
+            {/* Recent Users: Table showing first 5 users from API with avatar, email, status, join date */}
             <div className="lg:col-span-2 bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
@@ -391,7 +471,7 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* Top Products */}
+            {/* Top Products: Sidebar showing first 4 products with ranking badges */}
             <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
               <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
                 <AiOutlineTrophy className="text-orange-600" />
@@ -427,7 +507,7 @@ const Dashboard = () => {
         </main>
       </div>
 
-      {/* Overlay for mobile */}
+      {/* Mobile overlay: Dark backdrop when sidebar is open, click to close */}
       {sidebarOpen && (
         <div
           onClick={() => setSidebarOpen(false)}

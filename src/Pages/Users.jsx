@@ -1,3 +1,15 @@
+/**
+ * Users Component
+ *
+ * Displays a list of all users fetched from the REST API.
+ * Features:
+ * - Fetches users from /api/users endpoint
+ * - Search functionality to filter users by name or email
+ * - Statistics cards showing total, active, and inactive users
+ * - Responsive table layout with user avatars, status badges
+ * - Sidebar navigation with logout confirmation
+ */
+
 import { useContext, useState, useEffect } from 'react';
 import { AuthContext } from '../Context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -16,13 +28,20 @@ import toast, { Toaster } from 'react-hot-toast';
 import axios from 'axios';
 
 const Users = () => {
+  // Get authenticated user and logout function from AuthContext
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
 
+  // State management
+  const [sidebarOpen, setSidebarOpen] = useState(false); // Mobile sidebar toggle
+  const [users, setUsers] = useState([]); // Users list from API
+  const [loading, setLoading] = useState(true); // Loading state
+  const [searchTerm, setSearchTerm] = useState(''); // Search filter input
+
+  /**
+   * Fetch users from API on component mount
+   * Retrieves all users from /api/users endpoint
+   */
   useEffect(() => {
     const fetchUsers = async () => {
       try {
