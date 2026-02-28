@@ -14,7 +14,7 @@ import {
   AiOutlineArrowUp,
   AiOutlineArrowDown,
 } from 'react-icons/ai';
-import toast from 'react-hot-toast';
+import toast, { Toaster } from 'react-hot-toast';
 import axios from 'axios';
 
 const Analytics = () => {
@@ -98,6 +98,7 @@ const Analytics = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
+      <Toaster position="top-center" />
       {/* Sidebar - Same as Users page */}
       <aside
         className={`${
