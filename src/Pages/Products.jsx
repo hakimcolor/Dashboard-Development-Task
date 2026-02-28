@@ -154,8 +154,8 @@ const Products = () => {
                 <AiOutlineShoppingCart className="text-white text-xl" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-white">TaskFlow</h1>
-                <p className="text-xs text-gray-400">Dashboard v1.0</p>
+                <h1 className="text-2xl font-bold text-white">Dashboard</h1>
+                <p className="text-xs text-gray-400">v1.0</p>
               </div>
             </div>
             <button
