@@ -21,21 +21,25 @@ const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axios.get(
+        'https://task-api-eight-flax.vercel.app/api/dashboard'
+      );
+      setDashboardData(response.data);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+      setError('Failed to load dashboard data. Please try again.');
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        const response = await axios.get(
-          'https://task-api-eight-flax.vercel.app/api/dashboard'
-        );
-        setDashboardData(response.data);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error);
-        setLoading(false);
-      }
-    };
-
     fetchDashboardData();
   }, []);
 
@@ -50,7 +54,25 @@ const Dashboard = () => {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading dashboard...</p>
+          <p className="mt-4 text-gray-600">
+            Loading dashboard data from API...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">{error}</p>
+          <button
+            onClick={fetchDashboardData}
+            className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition"
+          >
+            Retry
+          </button>
         </div>
       </div>
     );
@@ -95,28 +117,28 @@ const Dashboard = () => {
           {/* Navigation */}
           <nav className="space-y-2">
             <a
-              href="#"
+              href="/dashboard"
               className="flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white transition"
             >
               <AiOutlineHome size={20} />
               <span className="font-medium">Dashboard</span>
             </a>
             <a
-              href="#"
+              href="/users"
               className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100 transition"
             >
               <AiOutlineUser size={20} />
               <span className="font-medium">Users</span>
             </a>
             <a
-              href="#"
+              href="/analytics"
               className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100 transition"
             >
               <AiOutlineBarChart size={20} />
               <span className="font-medium">Analytics</span>
             </a>
             <a
-              href="#"
+              href="/products"
               className="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100 transition"
             >
               <AiOutlineShoppingCart size={20} />
